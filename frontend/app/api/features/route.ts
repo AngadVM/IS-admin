@@ -41,15 +41,13 @@ export async function POST(req: Request) {
         }
 
         const result = await query(
-            `
-            INSERT INTO features (label, description) 
-            VALUES ($1, $2)
-            RETURNING id, label, description, created_at
-            `,
-            [label, description || null]
+            `INSERT INTO features (label, description) 
+             VALUES ($1, $2)
+             RETURNING id, label, description, created_at`,
+            [label.trim(), description?.trim() || null]
         );
 
-        return handleResponse(result.rows[0], 201);
+        return handleResponse({ feature: result.rows[0] }, 201);
     } catch (err: any) {
         if (err.code === "23505") {
             return handleResponse(
@@ -64,11 +62,12 @@ export async function POST(req: Request) {
 }
 
 // ----------------------------
-// DELETE → Delete feature by ID
+// DELETE → Delete feature by ID (using query params)
 // ----------------------------
 export async function DELETE(req: Request) {
     try {
-        const { id } = await req.json();
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get("id");
 
         if (!id) {
             return handleResponse(
@@ -78,7 +77,7 @@ export async function DELETE(req: Request) {
         }
 
         const result = await query(
-            `DELETE FROM features WHERE id = $1 RETURNING id`,
+            `DELETE FROM features WHERE id = $1 RETURNING id, label`,
             [id]
         );
 

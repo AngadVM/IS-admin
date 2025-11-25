@@ -48,16 +48,16 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">Subscription Admin</h1>
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">Subscription Admin</h1>
           <p className="text-xl text-gray-600">Manage your subscription platform</p>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Total Features</p>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Total Features</p>
                 <p className="text-4xl font-bold text-indigo-600">
                   {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.totalFeatures}
                 </p>
@@ -67,10 +67,10 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-500">Features available in plans</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Plan Types</p>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Plan Types</p>
                 <p className="text-4xl font-bold text-purple-600">
                   {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.totalPlanTypes}
                 </p>
@@ -80,10 +80,10 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-500">Categories of plans</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Subscription Plans</p>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Subscription Plans</p>
                 <p className="text-4xl font-bold text-blue-600">
                   {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.totalPlans}
                 </p>
@@ -98,20 +98,20 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Features Section */}
           <div className="bg-white rounded-2xl shadow-lg border-2 border-indigo-100 overflow-hidden hover:shadow-xl transition-all">
-            <div className="bg-linear-to-br from-indigo-500 to-indigo-600 p-6 text-white">
+            <div className="bg-linear-to-br from-indigo-600 to-indigo-700 p-6 text-white">
               <Tag className="w-12 h-12 mb-4" />
               <h2 className="text-2xl font-bold mb-2">Features</h2>
               <p className="text-indigo-100 text-sm">Define features for your subscription plans</p>
             </div>
             <div className="p-6">
               <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-2">Current Features</p>
-                <p className="text-4xl font-bold text-gray-800">
+                <p className="text-gray-600 text-sm mb-2 font-medium">Current Features</p>
+                <p className="text-4xl font-bold text-gray-900">
                   {loading ? '—' : stats.totalFeatures}
                 </p>
               </div>
               <Link href="/admin/features">
-                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all">
+                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
                   Manage Features
                   <ArrowRight className="w-5 h-5" />
                 </button>
@@ -121,20 +121,20 @@ export default function AdminDashboard() {
 
           {/* Plan Types Section */}
           <div className="bg-white rounded-2xl shadow-lg border-2 border-purple-100 overflow-hidden hover:shadow-xl transition-all">
-            <div className="bg-linear-to-br from-purple-500 to-purple-600 p-6 text-white">
+            <div className="bg-linear-to-br from-purple-600 to-purple-700 p-6 text-white">
               <Layers className="w-12 h-12 mb-4" />
               <h2 className="text-2xl font-bold mb-2">Plan Types</h2>
               <p className="text-purple-100 text-sm">Categorize your subscription offerings</p>
             </div>
             <div className="p-6">
               <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-2">Current Types</p>
-                <p className="text-4xl font-bold text-gray-800">
+                <p className="text-gray-600 text-sm mb-2 font-medium">Current Types</p>
+                <p className="text-4xl font-bold text-gray-900">
                   {loading ? '—' : stats.totalPlanTypes}
                 </p>
               </div>
               <Link href="/admin/plan_types">
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all">
+                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
                   Manage Plan Types
                   <ArrowRight className="w-5 h-5" />
                 </button>
@@ -144,20 +144,20 @@ export default function AdminDashboard() {
 
           {/* Subscription Plans Section */}
           <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-100 overflow-hidden hover:shadow-xl transition-all">
-            <div className="bg-linear-to-br from-blue-500 to-blue-600 p-6 text-white">
+            <div className="bg-linear-to-br from-blue-600 to-blue-700 p-6 text-white">
               <Package className="w-12 h-12 mb-4" />
               <h2 className="text-2xl font-bold mb-2">Subscription Plans</h2>
               <p className="text-blue-100 text-sm">Create and manage plans with pricing</p>
             </div>
             <div className="p-6">
               <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-2">Active Plans</p>
-                <p className="text-4xl font-bold text-gray-800">
+                <p className="text-gray-600 text-sm mb-2 font-medium">Active Plans</p>
+                <p className="text-4xl font-bold text-gray-900">
                   {loading ? '—' : stats.totalPlans}
                 </p>
               </div>
               <Link href="/admin/subscription_plans">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all">
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
                   Manage Plans
                   <ArrowRight className="w-5 h-5" />
                 </button>
@@ -170,28 +170,28 @@ export default function AdminDashboard() {
         <div className="bg-linear-to-br from-gray-800 to-gray-900 rounded-2xl p-8 text-white shadow-xl">
           <h3 className="text-2xl font-bold mb-6">Quick Start Guide</h3>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur">
+            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm hover:bg-opacity-15 transition-all">
               <div className="text-4xl font-bold text-indigo-400 mb-3">1</div>
               <h4 className="font-semibold text-lg mb-2">Create Features</h4>
               <p className="text-sm text-gray-300 mb-4">Define the features your subscription plans will include</p>
-              <Link href="/admin/features" className="text-indigo-400 hover:text-indigo-300 text-sm font-medium">
-                Go to Features →
+              <Link href="/admin/features" className="text-indigo-400 hover:text-indigo-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+                Go to Features <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur">
+            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm hover:bg-opacity-15 transition-all">
               <div className="text-4xl font-bold text-purple-400 mb-3">2</div>
               <h4 className="font-semibold text-lg mb-2">Define Plan Types</h4>
               <p className="text-sm text-gray-300 mb-4">Categorize your offerings into different plan types</p>
-              <Link href="/admin/plan_types" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
-                Go to Plan Types →
+              <Link href="/admin/plan_types" className="text-purple-400 hover:text-purple-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+                Go to Plan Types <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur">
+            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm hover:bg-opacity-15 transition-all">
               <div className="text-4xl font-bold text-blue-400 mb-3">3</div>
               <h4 className="font-semibold text-lg mb-2">Build Plans</h4>
               <p className="text-sm text-gray-300 mb-4">Create subscription plans with pricing and features</p>
-              <Link href="/admin/subscription_plans" className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                Go to Plans →
+              <Link href="/admin/subscription_plans" className="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+                Go to Plans <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
