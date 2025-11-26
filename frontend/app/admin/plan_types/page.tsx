@@ -1,4 +1,7 @@
 // app/admin/plan_types/page.tsx
+// This version uses INLINE STYLES to bypass any Tailwind caching issues
+// Copy this ENTIRE file and replace your current plan_types/page.tsx
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -18,6 +21,7 @@ export default function PlanTypesPage() {
     const [newDescription, setNewDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
     useEffect(() => {
@@ -76,109 +80,235 @@ export default function PlanTypesPage() {
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Delete plan type "${name}"?`)) return;
+        if (!confirm(`Delete plan type "${name}"? This will affect all subscription plans using this type.`)) return;
 
-        setLoading(true);
+        setDeletingId(id);
+        setMessage(null);
+
         try {
-            const res = await fetch('/api/plan_types', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+            const res = await fetch(`/api/plan_types?id=${encodeURIComponent(id)}`, {
+                method: 'DELETE'
             });
 
             if (res.ok) {
                 setPlanTypes(prev => prev.filter(pt => pt.id !== id));
                 setMessage({ text: `Plan type "${name}" deleted`, type: 'success' });
             } else {
-                setMessage({ text: 'Failed to delete plan type', type: 'error' });
+                const error = await res.json();
+                setMessage({ text: error.error || 'Failed to delete plan type', type: 'error' });
             }
         } catch (error) {
             setMessage({ text: 'Network error', type: 'error' });
         } finally {
-            setLoading(false);
+            setDeletingId(null);
         }
     };
 
     if (initialLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                backgroundColor: '#F9FAFB'
+            }}>
+                <Loader2 style={{ width: '32px', height: '32px', color: '#9333EA' }} className="animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-5xl mx-auto space-y-8">
+        <div style={{ 
+            minHeight: '100vh', 
+            backgroundColor: '#F9FAFB', 
+            padding: '32px',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+            <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+
                 {/* Header */}
-                <div>
-                    <Link href="/admin" className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-4">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
+                <div style={{ marginBottom: '32px' }}>
+                    <Link href="/admin" style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        color: '#9333EA',
+                        fontWeight: '600',
+                        marginBottom: '16px',
+                        textDecoration: 'none',
+                        fontSize: '15px'
+                    }}>
+                        <ArrowLeft style={{ width: '16px', height: '16px', marginRight: '8px' }} />
                         Back to Dashboard
                     </Link>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Layers className="w-10 h-10 text-purple-600" />
-                        <h1 className="text-4xl font-bold text-gray-800">Plan Types</h1>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <Layers style={{ width: '40px', height: '40px', color: '#9333EA' }} />
+                        <h1 style={{ 
+                            fontSize: '36px', 
+                            fontWeight: 'bold', 
+                            color: '#111827',
+                            margin: 0
+                        }}>
+                            Plan Types
+                        </h1>
                     </div>
-                    <p className="text-gray-600">Categorize your subscription offerings into different plan types</p>
+                    
+                    <p style={{ 
+                        color: '#374151', 
+                        fontSize: '16px', 
+                        fontWeight: '500',
+                        margin: 0
+                    }}>
+                        Categorize your subscription offerings into different plan types
+                    </p>
                 </div>
 
                 {/* Alert */}
                 {message && (
-                    <div className={`flex items-start gap-3 p-4 rounded-lg border ${
-                        message.type === 'success' 
-                            ? 'bg-green-50 border-green-200 text-green-800' 
-                            : 'bg-red-50 border-red-200 text-red-800'
-                    }`}>
-                        <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                        <p className="text-sm font-medium">{message.text}</p>
+                    <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        border: `2px solid ${message.type === 'success' ? '#86EFAC' : '#FCA5A5'}`,
+                        backgroundColor: message.type === 'success' ? '#F0FDF4' : '#FEF2F2',
+                        color: message.type === 'success' ? '#14532D' : '#7F1D1D',
+                        marginBottom: '32px'
+                    }}>
+                        <AlertCircle style={{ width: '20px', height: '20px', flexShrink: 0, marginTop: '2px' }} />
+                        <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>{message.text}</p>
                     </div>
                 )}
 
                 {/* Create Form */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div className="bg-linear-to-r from-purple-500 to-pink-600 px-6 py-4">
-                        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                            <Plus className="w-5 h-5" />
+                <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    border: '2px solid #E5E7EB',
+                    overflow: 'hidden',
+                    marginBottom: '32px'
+                }}>
+                    <div style={{
+                        background: 'linear-gradient(to right, #9333EA, #7E22CE)',
+                        padding: '20px 24px'
+                    }}>
+                        <h2 style={{
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            margin: 0
+                        }}>
+                            <Plus style={{ width: '24px', height: '24px' }} />
                             Create New Plan Type
                         </h2>
                     </div>
                     
-                    <div className="p-6 space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Plan Type Name
+                    <div style={{ padding: '24px', backgroundColor: '#F9FAFB' }}>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: '#111827',
+                                marginBottom: '8px'
+                            }}>
+                                Plan Type Name <span style={{ color: '#DC2626' }}>*</span>
                             </label>
                             <input
                                 type="text"
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '2px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    fontWeight: '500',
+                                    color: '#111827',
+                                    backgroundColor: 'white',
+                                    boxSizing: 'border-box',
+                                    outline: 'none'
+                                }}
                                 placeholder="e.g., Standard, Premium, Enterprise"
                                 disabled={loading}
+                                onFocus={(e) => e.target.style.borderColor = '#9333EA'}
+                                onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Description <span className="text-gray-400">(Optional)</span>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: '#111827',
+                                marginBottom: '8px'
+                            }}>
+                                Description <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(Optional)</span>
                             </label>
                             <textarea
                                 value={newDescription}
                                 onChange={(e) => setNewDescription(e.target.value)}
-                                rows={3}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                rows={4}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '2px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    fontWeight: '500',
+                                    color: '#111827',
+                                    backgroundColor: 'white',
+                                    resize: 'none',
+                                    boxSizing: 'border-box',
+                                    outline: 'none',
+                                    fontFamily: 'inherit'
+                                }}
                                 placeholder="Briefly describe this plan type..."
                                 disabled={loading}
+                                onFocus={(e) => e.target.style.borderColor = '#9333EA'}
+                                onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                             />
                         </div>
 
                         <button
                             onClick={handleCreate}
                             disabled={loading || !newName.trim()}
-                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                padding: '16px 24px',
+                                backgroundColor: loading || !newName.trim() ? '#9CA3AF' : '#9333EA',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                cursor: loading || !newName.trim() ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!loading && newName.trim()) {
+                                    e.currentTarget.style.backgroundColor = '#7E22CE';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!loading && newName.trim()) {
+                                    e.currentTarget.style.backgroundColor = '#9333EA';
+                                }
+                            }}
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                            {loading ? <Loader2 style={{ width: '20px', height: '20px' }} className="animate-spin" /> : <Plus style={{ width: '20px', height: '20px' }} />}
                             {loading ? 'Creating...' : 'Create Plan Type'}
                         </button>
                     </div>
@@ -186,39 +316,132 @@ export default function PlanTypesPage() {
 
                 {/* Plan Types List */}
                 <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-semibold text-gray-800">All Plan Types</h2>
-                        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '24px'
+                    }}>
+                        <h2 style={{ 
+                            fontSize: '30px', 
+                            fontWeight: 'bold', 
+                            color: '#111827',
+                            margin: 0
+                        }}>
+                            All Plan Types
+                        </h2>
+                        <span style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#9333EA',
+                            color: 'white',
+                            borderRadius: '9999px',
+                            fontSize: '16px',
+                            fontWeight: 'bold'
+                        }}>
                             {planTypes.length}
                         </span>
                     </div>
 
                     {planTypes.length === 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                            <Layers className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 font-medium">No plan types yet</p>
-                            <p className="text-gray-400 text-sm mt-1">Create your first plan type to get started</p>
+                        <div style={{
+                            backgroundColor: 'white',
+                            borderRadius: '12px',
+                            border: '2px solid #D1D5DB',
+                            padding: '64px',
+                            textAlign: 'center'
+                        }}>
+                            <Layers style={{ width: '64px', height: '64px', color: '#9CA3AF', margin: '0 auto 16px' }} />
+                            <p style={{ 
+                                color: '#111827', 
+                                fontWeight: 'bold', 
+                                fontSize: '18px',
+                                margin: '0 0 8px 0'
+                            }}>
+                                No plan types yet
+                            </p>
+                            <p style={{ 
+                                color: '#6B7280', 
+                                fontSize: '16px', 
+                                fontWeight: '500',
+                                margin: 0
+                            }}>
+                                Create your first plan type to get started
+                            </p>
                         </div>
                     ) : (
-                        <div className="grid gap-4">
+                        <div style={{ display: 'grid', gap: '20px' }}>
                             {planTypes.map((planType) => (
-                                <div key={planType.id} className="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 hover:shadow-sm transition-all">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                                <div key={planType.id} style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '12px',
+                                    border: '2px solid #D1D5DB',
+                                    padding: '24px',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = '#9333EA';
+                                    e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = '#D1D5DB';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        gap: '16px',
+                                        alignItems: 'flex-start'
+                                    }}>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{
+                                                fontSize: '20px',
+                                                fontWeight: 'bold',
+                                                color: '#111827',
+                                                marginBottom: '8px',
+                                                marginTop: 0
+                                            }}>
                                                 {planType.name}
                                             </h3>
-                                            <p className="text-sm text-gray-600">
+                                            <p style={{
+                                                fontSize: '16px',
+                                                color: '#374151',
+                                                fontWeight: '500',
+                                                margin: 0
+                                            }}>
                                                 {planType.description || 'No description provided.'}
                                             </p>
                                         </div>
                                         
                                         <button
                                             onClick={() => handleDelete(planType.id, planType.name)}
-                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                            disabled={loading}
+                                            disabled={deletingId === planType.id}
+                                            style={{
+                                                padding: '12px',
+                                                color: '#6B7280',
+                                                backgroundColor: 'transparent',
+                                                border: '2px solid transparent',
+                                                borderRadius: '8px',
+                                                cursor: deletingId === planType.id ? 'not-allowed' : 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (deletingId !== planType.id) {
+                                                    e.currentTarget.style.color = '#DC2626';
+                                                    e.currentTarget.style.backgroundColor = '#FEE2E2';
+                                                    e.currentTarget.style.borderColor = '#FCA5A5';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.color = '#6B7280';
+                                                e.currentTarget.style.backgroundColor = 'transparent';
+                                                e.currentTarget.style.borderColor = 'transparent';
+                                            }}
                                         >
-                                            <Trash2 className="w-5 h-5" />
+                                            {deletingId === planType.id ? (
+                                                <Loader2 style={{ width: '24px', height: '24px' }} className="animate-spin" />
+                                            ) : (
+                                                <Trash2 style={{ width: '24px', height: '24px' }} />
+                                            )}
                                         </button>
                                     </div>
                                 </div>

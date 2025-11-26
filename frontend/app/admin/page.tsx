@@ -1,4 +1,7 @@
 // app/admin/page.tsx
+// This version uses INLINE STYLES to bypass any Tailwind caching issues
+// Copy this ENTIRE file and replace your current admin/page.tsx
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -44,122 +47,351 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#F9FAFB', 
+      padding: '32px',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">Subscription Admin</h1>
-          <p className="text-xl text-gray-600">Manage your subscription platform</p>
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <h1 style={{ 
+            fontSize: '48px', 
+            fontWeight: 'bold', 
+            color: '#111827', 
+            marginBottom: '16px',
+            marginTop: 0
+          }}>
+            Subscription Admin
+          </h1>
+          <p style={{ 
+            fontSize: '20px', 
+            color: '#6B7280',
+            fontWeight: '500',
+            margin: 0
+          }}>
+            Manage your subscription platform
+          </p>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '24px',
+          marginBottom: '48px'
+        }}>
+          {/* Features Stat */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #E5E7EB',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
               <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Total Features</p>
-                <p className="text-4xl font-bold text-indigo-600">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.totalFeatures}
+                <p style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: '#6B7280',
+                  marginBottom: '8px',
+                  marginTop: 0
+                }}>
+                  Total Features
+                </p>
+                <p style={{ 
+                  fontSize: '36px', 
+                  fontWeight: 'bold', 
+                  color: '#4F46E5',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  {loading ? <Loader2 style={{ width: '32px', height: '32px' }} className="animate-spin" /> : stats.totalFeatures}
                 </p>
               </div>
-              <Tag className="w-12 h-12 text-indigo-600 opacity-20" />
+              <Tag style={{ width: '48px', height: '48px', color: '#4F46E5', opacity: 0.2 }} />
             </div>
-            <p className="text-xs text-gray-500">Features available in plans</p>
+            <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+              Features available in plans
+            </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
+          {/* Plan Types Stat */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #E5E7EB',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
               <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Plan Types</p>
-                <p className="text-4xl font-bold text-purple-600">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.totalPlanTypes}
+                <p style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: '#6B7280',
+                  marginBottom: '8px',
+                  marginTop: 0
+                }}>
+                  Plan Types
+                </p>
+                <p style={{ 
+                  fontSize: '36px', 
+                  fontWeight: 'bold', 
+                  color: '#9333EA',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  {loading ? <Loader2 style={{ width: '32px', height: '32px' }} className="animate-spin" /> : stats.totalPlanTypes}
                 </p>
               </div>
-              <Layers className="w-12 h-12 text-purple-600 opacity-20" />
+              <Layers style={{ width: '48px', height: '48px', color: '#9333EA', opacity: 0.2 }} />
             </div>
-            <p className="text-xs text-gray-500">Categories of plans</p>
+            <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+              Categories of plans
+            </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
+          {/* Plans Stat */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #E5E7EB',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
               <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Subscription Plans</p>
-                <p className="text-4xl font-bold text-blue-600">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.totalPlans}
+                <p style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: '#6B7280',
+                  marginBottom: '8px',
+                  marginTop: 0
+                }}>
+                  Subscription Plans
+                </p>
+                <p style={{ 
+                  fontSize: '36px', 
+                  fontWeight: 'bold', 
+                  color: '#2563EB',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  {loading ? <Loader2 style={{ width: '32px', height: '32px' }} className="animate-spin" /> : stats.totalPlans}
                 </p>
               </div>
-              <Package className="w-12 h-12 text-blue-600 opacity-20" />
+              <Package style={{ width: '48px', height: '48px', color: '#2563EB', opacity: 0.2 }} />
             </div>
-            <p className="text-xs text-gray-500">Active subscription plans</p>
+            <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>
+              Active subscription plans
+            </p>
           </div>
         </div>
 
-        {/* Management Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Features Section */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-indigo-100 overflow-hidden hover:shadow-xl transition-all">
-            <div className="bg-linear-to-br from-indigo-600 to-indigo-700 p-6 text-white">
-              <Tag className="w-12 h-12 mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Features</h2>
-              <p className="text-indigo-100 text-sm">Define features for your subscription plans</p>
+        {/* Management Cards */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '32px',
+          marginBottom: '48px'
+        }}>
+          {/* Features Card */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #C7D2FE',
+            overflow: 'hidden',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 20px 25px rgba(0, 0, 0, 0.15)'}
+          onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)'}>
+            <div style={{
+              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+              padding: '24px',
+              color: 'white'
+            }}>
+              <Tag style={{ width: '48px', height: '48px', marginBottom: '16px' }} />
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', marginTop: 0 }}>
+                Features
+              </h2>
+              <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
+                Define features for your subscription plans
+              </p>
             </div>
-            <div className="p-6">
-              <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-2 font-medium">Current Features</p>
-                <p className="text-4xl font-bold text-gray-900">
+            <div style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ fontSize: '14px', color: '#6B7280', fontWeight: '600', marginBottom: '8px', marginTop: 0 }}>
+                  Current Features
+                </p>
+                <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
                   {loading ? '—' : stats.totalFeatures}
                 </p>
               </div>
-              <Link href="/admin/features">
-                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
+              <Link href="/admin/features" style={{ textDecoration: 'none' }}>
+                <button style={{
+                  width: '100%',
+                  backgroundColor: '#4F46E5',
+                  color: 'white',
+                  fontWeight: '600',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontSize: '16px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4338CA'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4F46E5'}>
                   Manage Features
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight style={{ width: '20px', height: '20px' }} />
                 </button>
               </Link>
             </div>
           </div>
 
-          {/* Plan Types Section */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-purple-100 overflow-hidden hover:shadow-xl transition-all">
-            <div className="bg-linear-to-br from-purple-600 to-purple-700 p-6 text-white">
-              <Layers className="w-12 h-12 mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Plan Types</h2>
-              <p className="text-purple-100 text-sm">Categorize your subscription offerings</p>
+          {/* Plan Types Card */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #E9D5FF',
+            overflow: 'hidden',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 20px 25px rgba(0, 0, 0, 0.15)'}
+          onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)'}>
+            <div style={{
+              background: 'linear-gradient(135deg, #9333EA 0%, #7E22CE 100%)',
+              padding: '24px',
+              color: 'white'
+            }}>
+              <Layers style={{ width: '48px', height: '48px', marginBottom: '16px' }} />
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', marginTop: 0 }}>
+                Plan Types
+              </h2>
+              <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
+                Categorize your subscription offerings
+              </p>
             </div>
-            <div className="p-6">
-              <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-2 font-medium">Current Types</p>
-                <p className="text-4xl font-bold text-gray-900">
+            <div style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ fontSize: '14px', color: '#6B7280', fontWeight: '600', marginBottom: '8px', marginTop: 0 }}>
+                  Current Types
+                </p>
+                <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
                   {loading ? '—' : stats.totalPlanTypes}
                 </p>
               </div>
-              <Link href="/admin/plan_types">
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
+              <Link href="/admin/plan_types" style={{ textDecoration: 'none' }}>
+                <button style={{
+                  width: '100%',
+                  backgroundColor: '#9333EA',
+                  color: 'white',
+                  fontWeight: '600',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontSize: '16px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7E22CE'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#9333EA'}>
                   Manage Plan Types
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight style={{ width: '20px', height: '20px' }} />
                 </button>
               </Link>
             </div>
           </div>
 
-          {/* Subscription Plans Section */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-100 overflow-hidden hover:shadow-xl transition-all">
-            <div className="bg-linear-to-br from-blue-600 to-blue-700 p-6 text-white">
-              <Package className="w-12 h-12 mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Subscription Plans</h2>
-              <p className="text-blue-100 text-sm">Create and manage plans with pricing</p>
+          {/* Subscription Plans Card */}
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #BFDBFE',
+            overflow: 'hidden',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 20px 25px rgba(0, 0, 0, 0.15)'}
+          onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)'}>
+            <div style={{
+              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+              padding: '24px',
+              color: 'white'
+            }}>
+              <Package style={{ width: '48px', height: '48px', marginBottom: '16px' }} />
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', marginTop: 0 }}>
+                Subscription Plans
+              </h2>
+              <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
+                Create and manage plans with pricing
+              </p>
             </div>
-            <div className="p-6">
-              <div className="mb-6">
-                <p className="text-gray-600 text-sm mb-2 font-medium">Active Plans</p>
-                <p className="text-4xl font-bold text-gray-900">
+            <div style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ fontSize: '14px', color: '#6B7280', fontWeight: '600', marginBottom: '8px', marginTop: 0 }}>
+                  Active Plans
+                </p>
+                <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
                   {loading ? '—' : stats.totalPlans}
                 </p>
               </div>
-              <Link href="/admin/subscription_plans">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
+              <Link href="/admin/subscription_plans" style={{ textDecoration: 'none' }}>
+                <button style={{
+                  width: '100%',
+                  backgroundColor: '#2563EB',
+                  color: 'white',
+                  fontWeight: '600',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontSize: '16px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1D4ED8'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}>
                   Manage Plans
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight style={{ width: '20px', height: '20px' }} />
                 </button>
               </Link>
             </div>
@@ -167,31 +399,164 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Start Guide */}
-        <div className="bg-linear-to-br from-gray-800 to-gray-900 rounded-2xl p-8 text-white shadow-xl">
-          <h3 className="text-2xl font-bold mb-6">Quick Start Guide</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm hover:bg-opacity-15 transition-all">
-              <div className="text-4xl font-bold text-indigo-400 mb-3">1</div>
-              <h4 className="font-semibold text-lg mb-2">Create Features</h4>
-              <p className="text-sm text-gray-300 mb-4">Define the features your subscription plans will include</p>
-              <Link href="/admin/features" className="text-indigo-400 hover:text-indigo-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
-                Go to Features <ArrowRight className="w-4 h-4" />
+        <div style={{
+          background: 'linear-gradient(135deg, #1F2937 0%, #111827 100%)',
+          borderRadius: '16px',
+          padding: '32px',
+          color: 'white',
+          boxShadow: '0 20px 25px rgba(0, 0, 0, 0.2)'
+        }}>
+          <h3 style={{ 
+            fontSize: '24px', 
+            fontWeight: 'bold', 
+            marginBottom: '24px',
+            marginTop: 0
+          }}>
+            Quick Start Guide
+          </h3>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '24px'
+          }}>
+            {/* Step 1 */}
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '24px',
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}>
+              <div style={{ 
+                fontSize: '36px', 
+                fontWeight: 'bold', 
+                color: '#A78BFA',
+                marginBottom: '12px'
+              }}>
+                1
+              </div>
+              <h4 style={{ 
+                fontWeight: '600', 
+                fontSize: '18px', 
+                marginBottom: '8px',
+                marginTop: 0
+              }}>
+                Create Features
+              </h4>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#D1D5DB',
+                marginBottom: '16px',
+                lineHeight: '1.6'
+              }}>
+                Define the features your subscription plans will include
+              </p>
+              <Link href="/admin/features" style={{ 
+                color: '#A78BFA',
+                fontSize: '14px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                Go to Features <ArrowRight style={{ width: '16px', height: '16px' }} />
               </Link>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm hover:bg-opacity-15 transition-all">
-              <div className="text-4xl font-bold text-purple-400 mb-3">2</div>
-              <h4 className="font-semibold text-lg mb-2">Define Plan Types</h4>
-              <p className="text-sm text-gray-300 mb-4">Categorize your offerings into different plan types</p>
-              <Link href="/admin/plan_types" className="text-purple-400 hover:text-purple-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
-                Go to Plan Types <ArrowRight className="w-4 h-4" />
+
+            {/* Step 2 */}
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '24px',
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}>
+              <div style={{ 
+                fontSize: '36px', 
+                fontWeight: 'bold', 
+                color: '#C084FC',
+                marginBottom: '12px'
+              }}>
+                2
+              </div>
+              <h4 style={{ 
+                fontWeight: '600', 
+                fontSize: '18px', 
+                marginBottom: '8px',
+                marginTop: 0
+              }}>
+                Define Plan Types
+              </h4>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#D1D5DB',
+                marginBottom: '16px',
+                lineHeight: '1.6'
+              }}>
+                Categorize your offerings into different plan types
+              </p>
+              <Link href="/admin/plan_types" style={{ 
+                color: '#C084FC',
+                fontSize: '14px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                Go to Plan Types <ArrowRight style={{ width: '16px', height: '16px' }} />
               </Link>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm hover:bg-opacity-15 transition-all">
-              <div className="text-4xl font-bold text-blue-400 mb-3">3</div>
-              <h4 className="font-semibold text-lg mb-2">Build Plans</h4>
-              <p className="text-sm text-gray-300 mb-4">Create subscription plans with pricing and features</p>
-              <Link href="/admin/subscription_plans" className="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
-                Go to Plans <ArrowRight className="w-4 h-4" />
+
+            {/* Step 3 */}
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '24px',
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}>
+              <div style={{ 
+                fontSize: '36px', 
+                fontWeight: 'bold', 
+                color: '#60A5FA',
+                marginBottom: '12px'
+              }}>
+                3
+              </div>
+              <h4 style={{ 
+                fontWeight: '600', 
+                fontSize: '18px', 
+                marginBottom: '8px',
+                marginTop: 0
+              }}>
+                Build Plans
+              </h4>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#D1D5DB',
+                marginBottom: '16px',
+                lineHeight: '1.6'
+              }}>
+                Create subscription plans with pricing and features
+              </p>
+              <Link href="/admin/subscription_plans" style={{ 
+                color: '#60A5FA',
+                fontSize: '14px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                Go to Plans <ArrowRight style={{ width: '16px', height: '16px' }} />
               </Link>
             </div>
           </div>

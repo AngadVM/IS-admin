@@ -1,4 +1,7 @@
 // app/admin/subscription_plans/page.tsx
+// This version uses INLINE STYLES to bypass any Tailwind caching issues
+// Copy this ENTIRE file and replace your current subscription_plans/page.tsx
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -15,7 +18,9 @@ type SubscriptionPlan = {
     duration: Duration;
     price: number;
     currency: string;
+    description?: string | null;
     is_active: boolean;
+    is_default: boolean;
     features: Feature[];
     plan_type_name?: string;
 };
@@ -25,6 +30,7 @@ export default function SubscriptionPlansPage() {
     const [features, setFeatures] = useState<Feature[]>([]);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
     const [selectedPlanTypeId, setSelectedPlanTypeId] = useState('');
     const [duration, setDuration] = useState<Duration>('monthly');
     const [price, setPrice] = useState('');
@@ -73,7 +79,7 @@ export default function SubscriptionPlansPage() {
 
     const handleSubmit = async () => {
         if (!name.trim() || !selectedPlanTypeId || !price.trim()) {
-            setMessage({ text: 'Please fill in all required fields', type: 'error' });
+            setMessage({ text: 'Please fill in all required fields (Name, Plan Type, Price)', type: 'error' });
             return;
         }
 
@@ -97,6 +103,7 @@ export default function SubscriptionPlansPage() {
                     duration,
                     price: priceNum,
                     currency,
+                    description: description.trim() || null,
                     feature_ids: selectedFeatureIds
                 })
             });
@@ -105,6 +112,7 @@ export default function SubscriptionPlansPage() {
                 const data = await res.json();
                 setPlans(prev => [...prev, data]);
                 setName('');
+                setDescription('');
                 setPrice('');
                 setSelectedFeatureIds([]);
                 setMessage({ text: `Plan "${data.name}" created successfully!`, type: 'success' });
@@ -152,74 +160,180 @@ export default function SubscriptionPlansPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                backgroundColor: '#F9FAFB'
+            }}>
+                <Loader2 style={{ width: '32px', height: '32px', color: '#2563EB' }} className="animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div style={{ 
+            minHeight: '100vh', 
+            backgroundColor: '#F9FAFB', 
+            padding: '32px',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+
                 {/* Header */}
-                <div>
-                    <Link href="/admin" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4 font-semibold transition-colors">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
+                <div style={{ marginBottom: '32px' }}>
+                    <Link href="/admin" style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        color: '#2563EB',
+                        fontWeight: '600',
+                        marginBottom: '16px',
+                        textDecoration: 'none',
+                        fontSize: '15px'
+                    }}>
+                        <ArrowLeft style={{ width: '16px', height: '16px', marginRight: '8px' }} />
                         Back to Dashboard
                     </Link>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Package className="w-10 h-10 text-blue-600" />
-                        <h1 className="text-4xl font-bold text-gray-900">Subscription Plans</h1>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <Package style={{ width: '40px', height: '40px', color: '#2563EB' }} />
+                        <h1 style={{ 
+                            fontSize: '36px', 
+                            fontWeight: 'bold', 
+                            color: '#111827',
+                            margin: 0
+                        }}>
+                            Subscription Plans
+                        </h1>
                     </div>
-                    <p className="text-gray-700 text-base font-medium">Create and manage subscription plans with pricing and features</p>
+                    
+                    <p style={{ 
+                        color: '#374151', 
+                        fontSize: '16px', 
+                        fontWeight: '500',
+                        margin: 0
+                    }}>
+                        Create and manage subscription plans with pricing and features
+                    </p>
                 </div>
 
                 {/* Alert */}
                 {message && (
-                    <div className={`flex items-start gap-3 p-4 rounded-lg border shadow-sm ${
-                        message.type === 'success' 
-                            ? 'bg-green-50 border-green-300 text-green-900' 
-                            : 'bg-red-50 border-red-300 text-red-900'
-                    }`}>
-                        <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                        <p className="text-sm font-semibold">{message.text}</p>
+                    <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        border: `2px solid ${message.type === 'success' ? '#86EFAC' : '#FCA5A5'}`,
+                        backgroundColor: message.type === 'success' ? '#F0FDF4' : '#FEF2F2',
+                        color: message.type === 'success' ? '#14532D' : '#7F1D1D',
+                        marginBottom: '32px'
+                    }}>
+                        <AlertCircle style={{ width: '20px', height: '20px', flexShrink: 0, marginTop: '2px' }} />
+                        <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>{message.text}</p>
                     </div>
                 )}
 
                 {/* Create Plan Form */}
-                <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 overflow-hidden">
-                    <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-5">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Plus className="w-6 h-6" />
+                <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    border: '2px solid #E5E7EB',
+                    overflow: 'hidden',
+                    marginBottom: '32px'
+                }}>
+                    <div style={{
+                        background: 'linear-gradient(to right, #2563EB, #1D4ED8)',
+                        padding: '20px 24px'
+                    }}>
+                        <h2 style={{
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            margin: 0
+                        }}>
+                            <Plus style={{ width: '24px', height: '24px' }} />
                             Create New Plan
                         </h2>
                     </div>
                     
-                    <div className="p-6 space-y-6 bg-gray-50">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div style={{ padding: '24px', backgroundColor: '#F9FAFB' }}>
+                        {/* Plan Details Grid */}
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                            gap: '20px',
+                            marginBottom: '24px'
+                        }}>
+                            {/* Plan Name */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">
-                                    Plan Name <span className="text-red-600">*</span>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Plan Name <span style={{ color: '#DC2626' }}>*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium placeholder-gray-500 bg-white transition-all"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none'
+                                    }}
                                     placeholder="e.g., Pro Monthly"
                                     disabled={isSubmitting}
+                                    onFocus={(e) => e.target.style.borderColor = '#2563EB'}
+                                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                                 />
                             </div>
 
+                            {/* Plan Type */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">
-                                    Base Plan Type <span className="text-red-600">*</span>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Base Plan Type <span style={{ color: '#DC2626' }}>*</span>
                                 </label>
                                 <select
                                     value={selectedPlanTypeId}
                                     onChange={(e) => setSelectedPlanTypeId(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium bg-white transition-all"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none',
+                                        cursor: 'pointer'
+                                    }}
                                     disabled={isSubmitting || planTypes.length === 0}
+                                    onFocus={(e) => e.currentTarget.style.borderColor = '#2563EB'}
+                                    onBlur={(e) => e.currentTarget.style.borderColor = '#D1D5DB'}
                                 >
                                     {planTypes.length === 0 && <option>No plan types available</option>}
                                     {planTypes.map(pt => (
@@ -227,16 +341,37 @@ export default function SubscriptionPlansPage() {
                                     ))}
                                 </select>
                             </div>
-                            
+
+                            {/* Duration */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">
-                                    Billing Duration <span className="text-red-600">*</span>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Billing Duration <span style={{ color: '#DC2626' }}>*</span>
                                 </label>
                                 <select
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value as Duration)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium bg-white transition-all"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none',
+                                        cursor: 'pointer'
+                                    }}
                                     disabled={isSubmitting}
+                                    onFocus={(e) => e.currentTarget.style.borderColor = '#2563EB'}
+                                    onBlur={(e) => e.currentTarget.style.borderColor = '#D1D5DB'}
                                 >
                                     <option value="monthly">Monthly</option>
                                     <option value="yearly">Yearly</option>
@@ -245,10 +380,22 @@ export default function SubscriptionPlansPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-5">
+                        {/* Price and Currency */}
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: '2fr 1fr',
+                            gap: '20px',
+                            marginBottom: '24px'
+                        }}>
                             <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">
-                                    Price <span className="text-red-600">*</span>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Price <span style={{ color: '#DC2626' }}>*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -256,18 +403,51 @@ export default function SubscriptionPlansPage() {
                                     min="0"
                                     value={price}
                                     onChange={(e) => setPrice(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium placeholder-gray-500 bg-white transition-all"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none'
+                                    }}
                                     placeholder="0.00"
                                     disabled={isSubmitting}
+                                    onFocus={(e) => e.target.style.borderColor = '#2563EB'}
+                                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">Currency</label>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Currency
+                                </label>
                                 <select
                                     value={currency}
                                     onChange={(e) => setCurrency(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium bg-white transition-all"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none',
+                                        cursor: 'pointer'
+                                    }}
                                     disabled={isSubmitting}
                                 >
                                     <option value="USD">USD</option>
@@ -277,24 +457,119 @@ export default function SubscriptionPlansPage() {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-3">Included Features</label>
+                        {/* Description */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: '#111827',
+                                marginBottom: '8px'
+                            }}>
+                                Description <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(Optional)</span>
+                            </label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows={3}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '2px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    fontWeight: '500',
+                                    color: '#111827',
+                                    backgroundColor: 'white',
+                                    resize: 'vertical',
+                                    boxSizing: 'border-box',
+                                    outline: 'none',
+                                    fontFamily: 'inherit'
+                                }}
+                                placeholder="Describe this subscription plan..."
+                                disabled={isSubmitting}
+                                onFocus={(e) => e.target.style.borderColor = '#2563EB'}
+                                onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
+                            />
+                        </div>
+
+                        {/* Features Selection */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: '#111827',
+                                marginBottom: '12px'
+                            }}>
+                                Included Features
+                            </label>
                             {features.length === 0 ? (
-                                <div className="text-base text-gray-900 italic p-5 bg-yellow-50 rounded-lg border-2 border-yellow-300">
-                                    ⚠️ No features available. <Link href="/admin/features" className="text-blue-700 hover:text-blue-900 font-bold underline">Create features first</Link>
+                                <div style={{
+                                    padding: '20px',
+                                    backgroundColor: '#FEF3C7',
+                                    border: '2px solid #FCD34D',
+                                    borderRadius: '8px',
+                                    textAlign: 'center'
+                                }}>
+                                    <p style={{ 
+                                        fontSize: '16px', 
+                                        fontWeight: '600', 
+                                        color: '#92400E',
+                                        margin: 0
+                                    }}>
+                                        ⚠️ No features available. <Link href="/admin/features" style={{ color: '#1D4ED8', textDecoration: 'underline' }}>Create features first</Link>
+                                    </p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-5 bg-white rounded-lg border-2 border-gray-300">
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                    gap: '12px',
+                                    padding: '16px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '8px',
+                                    border: '2px solid #D1D5DB'
+                                }}>
                                     {features.map(feature => (
-                                        <label key={feature.id} className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-blue-50 border-2 border-transparent hover:border-blue-300 transition-all">
+                                        <label key={feature.id} style={{
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '10px',
+                                            cursor: 'pointer',
+                                            padding: '10px',
+                                            borderRadius: '6px',
+                                            border: '2px solid transparent',
+                                            backgroundColor: selectedFeatureIds.includes(feature.id) ? '#DBEAFE' : 'transparent',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = '#2563EB';
+                                            e.currentTarget.style.backgroundColor = selectedFeatureIds.includes(feature.id) ? '#DBEAFE' : '#F3F4F6';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = 'transparent';
+                                            e.currentTarget.style.backgroundColor = selectedFeatureIds.includes(feature.id) ? '#DBEAFE' : 'transparent';
+                                        }}>
                                             <input
                                                 type="checkbox"
                                                 checked={selectedFeatureIds.includes(feature.id)}
                                                 onChange={() => toggleFeature(feature.id)}
-                                                className="w-5 h-5 text-blue-600 border-gray-400 rounded focus:ring-blue-500 cursor-pointer mt-0.5"
+                                                style={{
+                                                    width: '18px',
+                                                    height: '18px',
+                                                    cursor: 'pointer',
+                                                    marginTop: '2px',
+                                                    flexShrink: 0
+                                                }}
                                                 disabled={isSubmitting}
                                             />
-                                            <span className="text-sm text-gray-900 font-semibold flex-1">
+                                            <span style={{
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                color: '#111827',
+                                                lineHeight: '1.4'
+                                            }}>
                                                 {feature.label}
                                             </span>
                                         </label>
@@ -302,13 +577,40 @@ export default function SubscriptionPlansPage() {
                                 </div>
                             )}
                         </div>
-                        
+
+                        {/* Submit Button */}
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting || !name.trim() || !selectedPlanTypeId || !price.trim()}
-                            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white font-bold text-base rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                padding: '16px 24px',
+                                backgroundColor: (isSubmitting || !name.trim() || !selectedPlanTypeId || !price.trim()) ? '#9CA3AF' : '#2563EB',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                cursor: (isSubmitting || !name.trim() || !selectedPlanTypeId || !price.trim()) ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isSubmitting && name.trim() && selectedPlanTypeId && price.trim()) {
+                                    e.currentTarget.style.backgroundColor = '#1D4ED8';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isSubmitting && name.trim() && selectedPlanTypeId && price.trim()) {
+                                    e.currentTarget.style.backgroundColor = '#2563EB';
+                                }
+                            }}
                         >
-                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                            {isSubmitting ? <Loader2 style={{ width: '20px', height: '20px' }} className="animate-spin" /> : <Plus style={{ width: '20px', height: '20px' }} />}
                             {isSubmitting ? 'Creating...' : 'Create Plan'}
                         </button>
                     </div>
@@ -316,73 +618,239 @@ export default function SubscriptionPlansPage() {
 
                 {/* Existing Plans */}
                 <div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-3xl font-bold text-gray-900">All Plans</h2>
-                        <span className="px-4 py-2 bg-blue-600 text-white rounded-full text-base font-bold shadow-md">
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '24px'
+                    }}>
+                        <h2 style={{ 
+                            fontSize: '30px', 
+                            fontWeight: 'bold', 
+                            color: '#111827',
+                            margin: 0
+                        }}>
+                            All Plans
+                        </h2>
+                        <span style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#2563EB',
+                            color: 'white',
+                            borderRadius: '9999px',
+                            fontSize: '16px',
+                            fontWeight: 'bold'
+                        }}>
                             {plans.length}
                         </span>
                     </div>
 
                     {plans.length === 0 ? (
-                        <div className="bg-white rounded-xl border-2 border-gray-300 p-16 text-center shadow-md">
-                            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-900 font-bold text-lg">No subscription plans yet</p>
-                            <p className="text-gray-600 text-base mt-2 font-medium">Create your first plan to get started</p>
+                        <div style={{
+                            backgroundColor: 'white',
+                            borderRadius: '12px',
+                            border: '2px solid #D1D5DB',
+                            padding: '64px',
+                            textAlign: 'center'
+                        }}>
+                            <Package style={{ width: '64px', height: '64px', color: '#9CA3AF', margin: '0 auto 16px' }} />
+                            <p style={{ 
+                                color: '#111827', 
+                                fontWeight: 'bold', 
+                                fontSize: '18px',
+                                margin: '0 0 8px 0'
+                            }}>
+                                No subscription plans yet
+                            </p>
+                            <p style={{ 
+                                color: '#6B7280', 
+                                fontSize: '16px', 
+                                fontWeight: '500',
+                                margin: 0
+                            }}>
+                                Create your first plan to get started
+                            </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                            gap: '24px' 
+                        }}>
                             {plans.map(plan => (
-                                <div key={plan.id} className="bg-white rounded-xl border-2 border-gray-300 hover:border-blue-400 hover:shadow-xl transition-all overflow-hidden">
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-xl font-bold text-gray-900 flex-1">{plan.name}</h3>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                                                    plan.is_active ? 'bg-green-100 text-green-800 border-2 border-green-300' : 'bg-gray-100 text-gray-700 border-2 border-gray-300'
-                                                }`}>
+                                <div key={plan.id} style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '12px',
+                                    border: '2px solid #D1D5DB',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = '#2563EB';
+                                    e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = '#D1D5DB';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}>
+                                    <div style={{ padding: '24px' }}>
+                                        {/* Plan Header */}
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            marginBottom: '16px'
+                                        }}>
+                                            <h3 style={{
+                                                fontSize: '20px',
+                                                fontWeight: 'bold',
+                                                color: '#111827',
+                                                margin: 0,
+                                                flex: 1
+                                            }}>
+                                                {plan.name}
+                                            </h3>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <span style={{
+                                                    padding: '4px 12px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 'bold',
+                                                    borderRadius: '9999px',
+                                                    backgroundColor: plan.is_active ? '#D1FAE5' : '#F3F4F6',
+                                                    color: plan.is_active ? '#065F46' : '#374151',
+                                                    border: `2px solid ${plan.is_active ? '#6EE7B7' : '#D1D5DB'}`
+                                                }}>
                                                     {plan.is_active ? 'Active' : 'Inactive'}
                                                 </span>
                                                 <button
                                                     onClick={() => handleDelete(plan.id, plan.name)}
-                                                    className="p-2 text-gray-500 hover:text-red-700 hover:bg-red-100 rounded-lg transition-all disabled:opacity-50 border-2 border-transparent hover:border-red-300"
                                                     disabled={deletingId === plan.id}
-                                                    title={`Delete ${plan.name}`}
+                                                    style={{
+                                                        padding: '8px',
+                                                        color: '#6B7280',
+                                                        backgroundColor: 'transparent',
+                                                        border: '2px solid transparent',
+                                                        borderRadius: '6px',
+                                                        cursor: deletingId === plan.id ? 'not-allowed' : 'pointer',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (deletingId !== plan.id) {
+                                                            e.currentTarget.style.color = '#DC2626';
+                                                            e.currentTarget.style.backgroundColor = '#FEE2E2';
+                                                            e.currentTarget.style.borderColor = '#FCA5A5';
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.color = '#6B7280';
+                                                        e.currentTarget.style.backgroundColor = 'transparent';
+                                                        e.currentTarget.style.borderColor = 'transparent';
+                                                    }}
                                                 >
                                                     {deletingId === plan.id ? (
-                                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                                        <Loader2 style={{ width: '18px', height: '18px' }} className="animate-spin" />
                                                     ) : (
-                                                        <Trash2 className="w-5 h-5" />
+                                                        <Trash2 style={{ width: '18px', height: '18px' }} />
                                                     )}
                                                 </button>
                                             </div>
                                         </div>
-                                        
-                                        <div className="flex items-baseline gap-1 mb-4">
-                                            <DollarSign className="w-6 h-6 text-blue-600 font-bold" />
-                                            <span className="text-3xl font-bold text-gray-900">{plan.price.toFixed(2)}</span>
-                                            <span className="text-gray-700 text-base font-semibold ml-1">
+
+                                        {/* Price */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'baseline',
+                                            gap: '6px',
+                                            marginBottom: '16px'
+                                        }}>
+                                            <DollarSign style={{ width: '24px', height: '24px', color: '#2563EB' }} />
+                                            <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827' }}>
+                                                {plan.price.toFixed(2)}
+                                            </span>
+                                            <span style={{ fontSize: '16px', fontWeight: '600', color: '#6B7280' }}>
                                                 {plan.currency} / {plan.duration === 'monthly' ? 'month' : plan.duration === 'yearly' ? 'year' : 'lifetime'}
                                             </span>
                                         </div>
-                                        
-                                        <div className="flex items-center gap-2 text-sm text-gray-700 mb-4 pb-4 border-b-2 border-gray-200">
-                                            <Clock className="w-5 h-5 text-gray-500" />
-                                            <span className="font-bold">{plan.plan_type_name || planTypes.find(pt => pt.id === plan.plan_type_id)?.name || 'N/A'}</span>
+
+                                        {/* Plan Type */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            paddingBottom: '16px',
+                                            marginBottom: '16px',
+                                            borderBottom: '2px solid #E5E7EB'
+                                        }}>
+                                            <Clock style={{ width: '18px', height: '18px', color: '#6B7280' }} />
+                                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                                                {plan.plan_type_name || planTypes.find(pt => pt.id === plan.plan_type_id)?.name || 'N/A'}
+                                            </span>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <h4 className="text-sm font-bold text-gray-900">Features:</h4>
+                                        {/* Description */}
+                                        {plan.description && (
+                                            <p style={{
+                                                fontSize: '14px',
+                                                color: '#6B7280',
+                                                fontWeight: '500',
+                                                marginBottom: '16px',
+                                                lineHeight: '1.6'
+                                            }}>
+                                                {plan.description}
+                                            </p>
+                                        )}
+
+                                        {/* Features */}
+                                        <div>
+                                            <h4 style={{
+                                                fontSize: '14px',
+                                                fontWeight: 'bold',
+                                                color: '#111827',
+                                                marginBottom: '12px',
+                                                marginTop: 0
+                                            }}>
+                                                Features:
+                                            </h4>
                                             {plan.features && plan.features.length > 0 ? (
-                                                <ul className="space-y-2">
+                                                <ul style={{ 
+                                                    listStyle: 'none', 
+                                                    padding: 0, 
+                                                    margin: 0,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '8px'
+                                                }}>
                                                     {plan.features.map(f => (
-                                                        <li key={f.id} className="flex items-start gap-2 text-sm text-gray-800">
-                                                            <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                                                            <span className="font-medium">{f.label}</span>
+                                                        <li key={f.id} style={{
+                                                            display: 'flex',
+                                                            alignItems: 'flex-start',
+                                                            gap: '8px'
+                                                        }}>
+                                                            <CheckCircle style={{ 
+                                                                width: '18px', 
+                                                                height: '18px', 
+                                                                color: '#10B981',
+                                                                flexShrink: 0,
+                                                                marginTop: '2px'
+                                                            }} />
+                                                            <span style={{
+                                                                fontSize: '14px',
+                                                                fontWeight: '500',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {f.label}
+                                                            </span>
                                                         </li>
                                                     ))}
                                                 </ul>
                                             ) : (
-                                                <p className="text-sm text-gray-600 italic font-medium">No features assigned</p>
+                                                <p style={{
+                                                    fontSize: '14px',
+                                                    color: '#9CA3AF',
+                                                    fontStyle: 'italic',
+                                                    margin: 0
+                                                }}>
+                                                    No features assigned
+                                                </p>
                                             )}
                                         </div>
                                     </div>

@@ -1,7 +1,3 @@
-// app/admin/features/page.tsx
-// This version uses INLINE STYLES to bypass any Tailwind caching issues
-// Copy this ENTIRE file and replace your current features/page.tsx
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
