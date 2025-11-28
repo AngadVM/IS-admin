@@ -1,6 +1,3 @@
-// app/api/subscription_plans/route.ts
-// CORRECT VERSION matching your database schema
-
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
@@ -18,9 +15,9 @@ function durationToDurationMonths(duration: string): number {
     return 0; // lifetime
 }
 
-// ----------------------------
+
 // GET → fetch all subscription plans + features
-// ----------------------------
+
 export async function GET() {
     try {
         const sql = `
@@ -35,13 +32,18 @@ export async function GET() {
                 sp.description,
                 sp.is_default,
                 sp.is_active,
+                sp.offer_type,
+                sp.offer_value,
+                sp.tag,
                 sp.created_at,
                 COALESCE(
                     json_agg(
                         json_build_object(
                             'id', f.id,
                             'label', f.label,
-                            'description', f.description
+                            'description', f.description,
+                            'feature_key', pf.feature_key,
+                            'limit_value', pf.limit_value
                         )
                     ) FILTER (WHERE f.id IS NOT NULL),
                     '[]'::json
@@ -69,6 +71,9 @@ export async function GET() {
             description: row.description,
             is_default: Boolean(row.is_default),
             is_active: Boolean(row.is_active),
+            offer_type: row.offer_type,
+            offer_value: row.offer_value ? Number(row.offer_value) : null,
+            tag: row.tag,
             features: Array.isArray(row.features) ? row.features : [],
             created_at: row.created_at
         }));
@@ -84,9 +89,8 @@ export async function GET() {
     }
 }
 
-// ----------------------------
-// POST → create new subscription plan + insert features
-// ----------------------------
+
+// POST → create new subscription plan + insert features with limits
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -99,7 +103,11 @@ export async function POST(req: Request) {
             currency = 'USD',
             description = null,
             is_default = false,
-            feature_ids = [],
+            offer_type = null,
+            offer_value = null,
+            tag = null,
+            features = [], // Array of {feature_id, feature_key?, limit_value?}
+            feature_ids = [], // Legacy support
         } = body;
 
         // Use either name or label_suffix
@@ -134,9 +142,10 @@ export async function POST(req: Request) {
             );
         }
 
-        if (!Array.isArray(feature_ids)) {
+        // Validate offer_type if provided
+        if (offer_type && !['percentage', 'fixed'].includes(offer_type)) {
             return NextResponse.json(
-                { error: "feature_ids must be an array of UUIDs." },
+                { error: "offer_type must be 'percentage' or 'fixed'." },
                 { status: 400 }
             );
         }
@@ -144,45 +153,42 @@ export async function POST(req: Request) {
         // Convert duration to months
         const durationMonths = durationToDurationMonths(duration);
 
-        // Insert plan + features (atomic transaction)
-        const sql = `
-            WITH inserted AS (
-                INSERT INTO subscription_plans (
-                    plan_type_id,
-                    label_suffix,
-                    duration_months,
-                    price,
-                    currency,
-                    description,
-                    is_default,
-                    is_active
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)
-                RETURNING id, label_suffix, plan_type_id, duration_months, price, currency, description, is_default, is_active, created_at
-            ),
-            insert_features AS (
-                INSERT INTO plan_features (plan_id, feature_id)
-                SELECT i.id, f
-                FROM inserted i,
-                     unnest($8::uuid[]) AS f
+        // Prepare features array (support both new format and legacy)
+        let featuresArray = features;
+        if (featuresArray.length === 0 && feature_ids.length > 0) {
+            // Legacy format - just feature IDs
+            featuresArray = feature_ids.map((id: string) => ({ feature_id: id }));
+        }
+
+        if (!Array.isArray(featuresArray)) {
+            return NextResponse.json(
+                { error: "features must be an array." },
+                { status: 400 }
+            );
+        }
+
+        // Insert plan
+        const insertPlanSql = `
+            INSERT INTO subscription_plans (
+                plan_type_id,
+                label_suffix,
+                duration_months,
+                price,
+                currency,
+                description,
+                is_default,
+                is_active,
+                offer_type,
+                offer_value,
+                tag
             )
-            SELECT 
-                i.id, 
-                i.label_suffix,
-                i.plan_type_id,
-                i.duration_months,
-                i.price,
-                i.currency,
-                i.description,
-                i.is_default,
-                i.is_active,
-                i.created_at,
-                pt.name as plan_type_name
-            FROM inserted i
-            JOIN plan_types pt ON i.plan_type_id = pt.id;
+            VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, $8, $9, $10)
+            RETURNING id, label_suffix, plan_type_id, duration_months, price, 
+                      currency, description, is_default, is_active, 
+                      offer_type, offer_value, tag, created_at
         `;
 
-        const params = [
+        const planParams = [
             plan_type_id,
             planName,
             durationMonths,
@@ -190,15 +196,40 @@ export async function POST(req: Request) {
             currency,
             description,
             is_default,
-            feature_ids,
+            offer_type,
+            offer_value,
+            tag,
         ];
 
-        const result = await query(sql, params);
-        const newPlan = result.rows[0];
+        const planResult = await query(insertPlanSql, planParams);
+        const newPlan = planResult.rows[0];
+
+        // Insert features with their limits
+        if (featuresArray.length > 0) {
+            const featureInsertPromises = featuresArray.map((feature: any) => {
+                return query(
+                    `INSERT INTO plan_features (plan_id, feature_id, feature_key, limit_value)
+                     VALUES ($1, $2, $3, $4)`,
+                    [
+                        newPlan.id,
+                        feature.feature_id,
+                        feature.feature_key || null,
+                        feature.limit_value || null
+                    ]
+                );
+            });
+            await Promise.all(featureInsertPromises);
+        }
+
+        // Fetch plan type name
+        const planTypeResult = await query(
+            `SELECT name FROM plan_types WHERE id = $1`,
+            [newPlan.plan_type_id]
+        );
 
         // Fetch the features for the response
         const featuresResult = await query(
-            `SELECT f.id, f.label, f.description
+            `SELECT f.id, f.label, f.description, pf.feature_key, pf.limit_value
              FROM features f
              JOIN plan_features pf ON f.id = pf.feature_id
              WHERE pf.plan_id = $1`,
@@ -208,7 +239,7 @@ export async function POST(req: Request) {
         const response = {
             id: newPlan.id,
             plan_type_id: newPlan.plan_type_id,
-            plan_type_name: newPlan.plan_type_name,
+            plan_type_name: planTypeResult.rows[0]?.name || '',
             name: newPlan.label_suffix,
             label_suffix: newPlan.label_suffix,
             duration: durationMonthsToDuration(newPlan.duration_months),
@@ -218,6 +249,9 @@ export async function POST(req: Request) {
             description: newPlan.description,
             is_default: Boolean(newPlan.is_default),
             is_active: Boolean(newPlan.is_active),
+            offer_type: newPlan.offer_type,
+            offer_value: newPlan.offer_value ? Number(newPlan.offer_value) : null,
+            tag: newPlan.tag,
             features: featuresResult.rows,
             created_at: newPlan.created_at
         };
@@ -247,9 +281,8 @@ export async function POST(req: Request) {
     }
 }
 
-// ----------------------------
 // DELETE → delete a subscription plan by ID (query param)
-// ----------------------------
+
 export async function DELETE(req: Request) {
     try {
         const { searchParams } = new URL(req.url);

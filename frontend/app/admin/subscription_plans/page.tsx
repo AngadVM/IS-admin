@@ -1,16 +1,19 @@
-// app/admin/subscription_plans/page.tsx
-// This version uses INLINE STYLES to bypass any Tailwind caching issues
-// Copy this ENTIRE file and replace your current subscription_plans/page.tsx
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Plus, Package, CheckCircle, DollarSign, Clock, AlertCircle, ArrowLeft, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Package, CheckCircle, DollarSign, Clock, AlertCircle, ArrowLeft, Trash2, Tag, Percent } from 'lucide-react';
 import Link from 'next/link';
 
 type PlanType = { id: string; name: string; };
-type Feature = { id: string; label: string; description: string | null; };
+type Feature = { 
+    id: string; 
+    label: string; 
+    description: string | null;
+    feature_key?: string | null;
+    limit_value?: number | null;
+};
 type Duration = 'monthly' | 'yearly' | 'lifetime';
+type OfferType = 'percentage' | 'fixed' | null;
 type SubscriptionPlan = {
     id: string;
     plan_type_id: string;
@@ -21,8 +24,17 @@ type SubscriptionPlan = {
     description?: string | null;
     is_active: boolean;
     is_default: boolean;
+    offer_type?: OfferType;
+    offer_value?: number | null;
+    tag?: string | null;
     features: Feature[];
     plan_type_name?: string;
+};
+
+type FeatureWithLimit = {
+    feature_id: string;
+    feature_key?: string;
+    limit_value?: number;
 };
 
 export default function SubscriptionPlansPage() {
@@ -35,7 +47,10 @@ export default function SubscriptionPlansPage() {
     const [duration, setDuration] = useState<Duration>('monthly');
     const [price, setPrice] = useState('');
     const [currency, setCurrency] = useState('USD');
-    const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
+    const [offerType, setOfferType] = useState<OfferType>(null);
+    const [offerValue, setOfferValue] = useState('');
+    const [tag, setTag] = useState('');
+    const [selectedFeatures, setSelectedFeatures] = useState<FeatureWithLimit[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -89,6 +104,15 @@ export default function SubscriptionPlansPage() {
             return;
         }
 
+        // Validate offer value if offer type is set
+        if (offerType && offerValue) {
+            const offerNum = parseFloat(offerValue);
+            if (isNaN(offerNum) || offerNum < 0) {
+                setMessage({ text: 'Please enter a valid offer value', type: 'error' });
+                return;
+            }
+        }
+
         setIsSubmitting(true);
         setMessage(null);
 
@@ -104,7 +128,10 @@ export default function SubscriptionPlansPage() {
                     price: priceNum,
                     currency,
                     description: description.trim() || null,
-                    feature_ids: selectedFeatureIds
+                    offer_type: offerType,
+                    offer_value: offerValue ? parseFloat(offerValue) : null,
+                    tag: tag.trim() || null,
+                    features: selectedFeatures
                 })
             });
 
@@ -114,7 +141,10 @@ export default function SubscriptionPlansPage() {
                 setName('');
                 setDescription('');
                 setPrice('');
-                setSelectedFeatureIds([]);
+                setOfferType(null);
+                setOfferValue('');
+                setTag('');
+                setSelectedFeatures([]);
                 setMessage({ text: `Plan "${data.name}" created successfully!`, type: 'success' });
             } else {
                 const error = await res.json();
@@ -152,10 +182,31 @@ export default function SubscriptionPlansPage() {
         }
     };
 
-    const toggleFeature = (id: string) => {
-        setSelectedFeatureIds(prev =>
-            prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
-        );
+    const toggleFeature = (featureId: string) => {
+        setSelectedFeatures(prev => {
+            const exists = prev.find(f => f.feature_id === featureId);
+            if (exists) {
+                return prev.filter(f => f.feature_id !== featureId);
+            } else {
+                return [...prev, { feature_id: featureId }];
+            }
+        });
+    };
+
+    const updateFeatureLimit = (featureId: string, key: string, value: string) => {
+        setSelectedFeatures(prev => {
+            return prev.map(f => {
+                if (f.feature_id === featureId) {
+                    if (key === 'feature_key') {
+                        return { ...f, feature_key: value || undefined };
+                    } else if (key === 'limit_value') {
+                        const numValue = value ? parseInt(value) : undefined;
+                        return { ...f, limit_value: numValue };
+                    }
+                }
+                return f;
+            });
+        });
     };
 
     if (loading) {
@@ -214,7 +265,7 @@ export default function SubscriptionPlansPage() {
                         fontWeight: '500',
                         margin: 0
                     }}>
-                        Create and manage subscription plans with pricing and features
+                        Create and manage subscription plans with pricing, offers, and features
                     </p>
                 </div>
 
@@ -380,10 +431,10 @@ export default function SubscriptionPlansPage() {
                             </div>
                         </div>
 
-                        {/* Price and Currency */}
+                        {/* Price, Currency, Tag */}
                         <div style={{ 
                             display: 'grid', 
-                            gridTemplateColumns: '2fr 1fr',
+                            gridTemplateColumns: '2fr 1fr 2fr',
                             gap: '20px',
                             marginBottom: '24px'
                         }}>
@@ -455,6 +506,116 @@ export default function SubscriptionPlansPage() {
                                     <option value="GBP">GBP</option>
                                 </select>
                             </div>
+
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Tag <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(Optional)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={tag}
+                                    onChange={(e) => setTag(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none'
+                                    }}
+                                    placeholder="e.g., Popular, Best Value"
+                                    disabled={isSubmitting}
+                                    onFocus={(e) => e.target.style.borderColor = '#2563EB'}
+                                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Offer Type and Value */}
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '20px',
+                            marginBottom: '24px'
+                        }}>
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Offer Type <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(Optional)</span>
+                                </label>
+                                <select
+                                    value={offerType || ''}
+                                    onChange={(e) => setOfferType(e.target.value ? e.target.value as OfferType : null)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none',
+                                        cursor: 'pointer'
+                                    }}
+                                    disabled={isSubmitting}
+                                >
+                                    <option value="">None</option>
+                                    <option value="percentage">Percentage Discount</option>
+                                    <option value="fixed">Fixed Amount Discount</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    marginBottom: '8px'
+                                }}>
+                                    Offer Value <span style={{ color: '#6B7280', fontWeight: 'normal' }}>(Optional)</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={offerValue}
+                                    onChange={(e) => setOfferValue(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        border: '2px solid #D1D5DB',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        color: '#111827',
+                                        backgroundColor: 'white',
+                                        boxSizing: 'border-box',
+                                        outline: 'none'
+                                    }}
+                                    placeholder={offerType === 'percentage' ? 'e.g., 20' : 'e.g., 10.00'}
+                                    disabled={isSubmitting || !offerType}
+                                    onFocus={(e) => e.target.style.borderColor = '#2563EB'}
+                                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
+                                />
+                            </div>
                         </div>
 
                         {/* Description */}
@@ -502,7 +663,7 @@ export default function SubscriptionPlansPage() {
                                 color: '#111827',
                                 marginBottom: '12px'
                             }}>
-                                Included Features
+                                Included Features with Limits
                             </label>
                             {features.length === 0 ? (
                                 <div style={{
@@ -523,57 +684,123 @@ export default function SubscriptionPlansPage() {
                                 </div>
                             ) : (
                                 <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                                    gap: '12px',
                                     padding: '16px',
                                     backgroundColor: 'white',
                                     borderRadius: '8px',
                                     border: '2px solid #D1D5DB'
                                 }}>
-                                    {features.map(feature => (
-                                        <label key={feature.id} style={{
-                                            display: 'flex',
-                                            alignItems: 'flex-start',
-                                            gap: '10px',
-                                            cursor: 'pointer',
-                                            padding: '10px',
-                                            borderRadius: '6px',
-                                            border: '2px solid transparent',
-                                            backgroundColor: selectedFeatureIds.includes(feature.id) ? '#DBEAFE' : 'transparent',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.borderColor = '#2563EB';
-                                            e.currentTarget.style.backgroundColor = selectedFeatureIds.includes(feature.id) ? '#DBEAFE' : '#F3F4F6';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.borderColor = 'transparent';
-                                            e.currentTarget.style.backgroundColor = selectedFeatureIds.includes(feature.id) ? '#DBEAFE' : 'transparent';
-                                        }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedFeatureIds.includes(feature.id)}
-                                                onChange={() => toggleFeature(feature.id)}
-                                                style={{
-                                                    width: '18px',
-                                                    height: '18px',
-                                                    cursor: 'pointer',
-                                                    marginTop: '2px',
-                                                    flexShrink: 0
-                                                }}
-                                                disabled={isSubmitting}
-                                            />
-                                            <span style={{
-                                                fontSize: '14px',
-                                                fontWeight: '600',
-                                                color: '#111827',
-                                                lineHeight: '1.4'
+                                    {features.map(feature => {
+                                        const selectedFeature = selectedFeatures.find(f => f.feature_id === feature.id);
+                                        const isSelected = !!selectedFeature;
+                                        
+                                        return (
+                                            <div key={feature.id} style={{
+                                                padding: '12px',
+                                                marginBottom: '12px',
+                                                borderRadius: '6px',
+                                                border: '2px solid',
+                                                borderColor: isSelected ? '#2563EB' : '#E5E7EB',
+                                                backgroundColor: isSelected ? '#EFF6FF' : 'transparent'
                                             }}>
-                                                {feature.label}
-                                            </span>
-                                        </label>
-                                    ))}
+                                                <label style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '10px',
+                                                    cursor: 'pointer',
+                                                    marginBottom: isSelected ? '12px' : '0'
+                                                }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => toggleFeature(feature.id)}
+                                                        style={{
+                                                            width: '18px',
+                                                            height: '18px',
+                                                            cursor: 'pointer',
+                                                            flexShrink: 0
+                                                        }}
+                                                        disabled={isSubmitting}
+                                                    />
+                                                    <span style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        color: '#111827'
+                                                    }}>
+                                                        {feature.label}
+                                                    </span>
+                                                </label>
+                                                
+                                                {isSelected && (
+                                                    <div style={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr',
+                                                        gap: '12px',
+                                                        paddingLeft: '28px'
+                                                    }}>
+                                                        <div>
+                                                            <label style={{
+                                                                display: 'block',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                color: '#6B7280',
+                                                                marginBottom: '4px'
+                                                            }}>
+                                                                Feature Key
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={selectedFeature.feature_key || ''}
+                                                                onChange={(e) => updateFeatureLimit(feature.id, 'feature_key', e.target.value)}
+                                                                placeholder="e.g., max_users"
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '8px 12px',
+                                                                    border: '1px solid #D1D5DB',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '14px',
+                                                                    color: '#111827',
+                                                                    backgroundColor: 'white',
+                                                                    boxSizing: 'border-box',
+                                                                    outline: 'none'
+                                                                }}
+                                                                disabled={isSubmitting}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label style={{
+                                                                display: 'block',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                color: '#6B7280',
+                                                                marginBottom: '4px'
+                                                            }}>
+                                                                Limit Value
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                value={selectedFeature.limit_value || ''}
+                                                                onChange={(e) => updateFeatureLimit(feature.id, 'limit_value', e.target.value)}
+                                                                placeholder="e.g., 100"
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '8px 12px',
+                                                                    border: '1px solid #D1D5DB',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '14px',
+                                                                    color: '#111827',
+                                                                    backgroundColor: 'white',
+                                                                    boxSizing: 'border-box',
+                                                                    outline: 'none'
+                                                                }}
+                                                                disabled={isSubmitting}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -700,15 +927,33 @@ export default function SubscriptionPlansPage() {
                                             alignItems: 'flex-start',
                                             marginBottom: '16px'
                                         }}>
-                                            <h3 style={{
-                                                fontSize: '20px',
-                                                fontWeight: 'bold',
-                                                color: '#111827',
-                                                margin: 0,
-                                                flex: 1
-                                            }}>
-                                                {plan.name}
-                                            </h3>
+                                            <div style={{ flex: 1 }}>
+                                                <h3 style={{
+                                                    fontSize: '20px',
+                                                    fontWeight: 'bold',
+                                                    color: '#111827',
+                                                    margin: '0 0 8px 0'
+                                                }}>
+                                                    {plan.name}
+                                                </h3>
+                                                {plan.tag && (
+                                                    <div style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        padding: '4px 10px',
+                                                        backgroundColor: '#FEF3C7',
+                                                        border: '2px solid #FCD34D',
+                                                        borderRadius: '9999px',
+                                                        fontSize: '12px',
+                                                        fontWeight: 'bold',
+                                                        color: '#92400E'
+                                                    }}>
+                                                        <Tag style={{ width: '12px', height: '12px' }} />
+                                                        {plan.tag}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                 <span style={{
                                                     padding: '4px 12px',
@@ -760,7 +1005,7 @@ export default function SubscriptionPlansPage() {
                                             display: 'flex',
                                             alignItems: 'baseline',
                                             gap: '6px',
-                                            marginBottom: '16px'
+                                            marginBottom: '8px'
                                         }}>
                                             <DollarSign style={{ width: '24px', height: '24px', color: '#2563EB' }} />
                                             <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#111827' }}>
@@ -770,6 +1015,28 @@ export default function SubscriptionPlansPage() {
                                                 {plan.currency} / {plan.duration === 'monthly' ? 'month' : plan.duration === 'yearly' ? 'year' : 'lifetime'}
                                             </span>
                                         </div>
+
+                                        {/* Offer Badge */}
+                                        {plan.offer_type && plan.offer_value && (
+                                            <div style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                padding: '6px 12px',
+                                                backgroundColor: '#DCFCE7',
+                                                border: '2px solid #86EFAC',
+                                                borderRadius: '9999px',
+                                                fontSize: '13px',
+                                                fontWeight: 'bold',
+                                                color: '#14532D',
+                                                marginBottom: '16px'
+                                            }}>
+                                                <Percent style={{ width: '14px', height: '14px' }} />
+                                                {plan.offer_type === 'percentage' 
+                                                    ? `${plan.offer_value}% OFF` 
+                                                    : `${plan.currency} ${plan.offer_value} OFF`}
+                                            </div>
+                                        )}
 
                                         {/* Plan Type */}
                                         <div style={{
@@ -832,13 +1099,27 @@ export default function SubscriptionPlansPage() {
                                                                 flexShrink: 0,
                                                                 marginTop: '2px'
                                                             }} />
-                                                            <span style={{
-                                                                fontSize: '14px',
-                                                                fontWeight: '500',
-                                                                color: '#374151'
-                                                            }}>
-                                                                {f.label}
-                                                            </span>
+                                                            <div style={{ flex: 1 }}>
+                                                                <span style={{
+                                                                    fontSize: '14px',
+                                                                    fontWeight: '500',
+                                                                    color: '#374151'
+                                                                }}>
+                                                                    {f.label}
+                                                                </span>
+                                                                {(f.feature_key || f.limit_value) && (
+                                                                    <div style={{
+                                                                        fontSize: '12px',
+                                                                        color: '#6B7280',
+                                                                        marginTop: '2px',
+                                                                        fontFamily: 'monospace'
+                                                                    }}>
+                                                                        {f.feature_key && `${f.feature_key}`}
+                                                                        {f.feature_key && f.limit_value && ': '}
+                                                                        {f.limit_value && `${f.limit_value}`}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </li>
                                                     ))}
                                                 </ul>
